@@ -43,7 +43,7 @@ public class Spell extends Item{
     private static final String SPELL_INFO_FORMAT = "|%-5d|%-15s|%-7d|%-8d|%-8d|%-7d|%-10s|%n";
     public static void printSpellList(List<Spell> list){
         if(OutputTools.emptyList(list)) return;
-
+        
         System.out.println(SPELL_INFO_SEPERATOR);
         System.out.println(SPELL_INFO_HEADER);
         System.out.println(SPELL_INFO_SEPERATOR);

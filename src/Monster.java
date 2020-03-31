@@ -12,8 +12,8 @@ public class Monster extends GameCharacter{
         attribute = _attribute;
         type = _type;
     }
-    Monster(String _name, Coordinate _coord, MonsterAttribute _attribute, MonsterType _type) {
-        super(_name, _coord);
+    Monster(String _name, Coordinate _coord, RPGBoardEntry _cell, MonsterAttribute _attribute, MonsterType _type) {
+        super(_name, _coord, _cell);
         attribute = _attribute;
         type = _type;
     }

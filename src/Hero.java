@@ -30,8 +30,8 @@ public class Hero extends GameCharacter{
         spells = new ArrayList<>();
         potions = new ArrayList<>();
     }
-    Hero(String _name, Coordinate _coord, HeroAttribute _attribute, HeroType _type){
-        super(_name, _coord);
+    Hero(String _name, Coordinate _coord, RPGBoardEntry _cell, HeroAttribute _attribute, HeroType _type){
+        super(_name, _coord, _cell);
 
         attribute = _attribute;
         type = _type;

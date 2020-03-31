@@ -18,6 +18,21 @@ public class OutputTools{
         return false;
     }
     
+    // public static void printItemList(List<Item> list){
+    //     if(emptyList(list)) return;
+
+    //     Item head = list.get(0);
+    //     if(head instanceof Weapon){
+    //         Weapon.printWeaponList(list);
+    //     }else if(head instanceof Armor){
+    //         Armor.printArmorList(list);
+    //     }else if(head instanceof Spell){
+    //         Spell.printSpellList(list);
+    //     }else if(head instanceof Potion){
+    //         Potion.printPotionList(list);
+    //     }
+    // }
+
     public static void printYellowString(String s){
         System.out.println(ConstantVariables.ANSI_YELLOW + s + ConstantVariables.ANSI_RESET);
     }

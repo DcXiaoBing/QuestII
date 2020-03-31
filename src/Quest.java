@@ -17,8 +17,8 @@ public class Quest extends RectangularRPGBoardGame {
 
     
 
-    private static int minLength = 6, maxLength = 10;
-    private static int minWidth = 6, maxWidth = 10;
+    private static int minLength = 8, maxLength = 8;
+    private static int minWidth = 8, maxWidth = 8;
     private static int defaultTeamCount = 1;
     private static int minHeroCount = 1, maxHeroCount = 3;
 
