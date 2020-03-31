@@ -1,6 +1,7 @@
 public enum BoardEntryType{
     InAccessible,
-    Nexus,
+    HeroNexus,
+    MonsterNexus,
     Regular,
     Bush,
     Koulou,
