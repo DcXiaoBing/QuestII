@@ -17,6 +17,9 @@ public class Monster extends GameCharacter{
         attribute = _attribute;
         type = _type;
     }
+    Monster(Monster m){
+        this(m.getName(), new MonsterAttribute(m.getAttribute()), m.getType());
+    }
     Monster(String _name, String _alias, Coordinate _coord, RPGBoardEntry _cell, MonsterAttribute _attribute, MonsterType _type) {
         super(_name, _alias, _coord, _cell);
         attribute = _attribute;
@@ -33,7 +36,7 @@ public class Monster extends GameCharacter{
         if(targets.isEmpty()){ // no target, move forward
             move(b);
         }else{ // attack hero randomly
-            attack(targets);
+            attack(targets, b);
         }
     }
 
@@ -72,7 +75,7 @@ public class Monster extends GameCharacter{
      * a function handle monster's attack. Randomly choose an hero to attack when there are more than 1 target.
      * @param targets list of heros that monster can attack. Need to contain at least one target
      */
-    private void attack(List<Hero> targets){
+    private void attack(List<Hero> targets, RectangularRPGBoard b){
         Hero target = targets.get(ran.nextInt(targets.size()));
 
         if(QuestCombat.dodge(target.getDodgeChance())){
@@ -81,6 +84,9 @@ public class Monster extends GameCharacter{
             int damage = Math.max(0, getDamage() - target.getDefense());
 
             target.getAttribute().addCurHp(-damage);
+            if(target.getAttribute().getCurHp() < 0){
+                target.die(b);
+            }
             QuestCombat.printDamageInfo(damage, this, target);
         }
     }
@@ -111,20 +117,31 @@ public class Monster extends GameCharacter{
     /**
      * generate monster randomly from list, and set alias by its order of generate
      */
-    public static void spawnMonster(RectangularRPGBoard b, List<Monster> monsters){
+    public static void spawnMonster(RectangularRPGBoard b, List<Monster> monsters, List<Hero> heros){
+        int maxLevel = 0;
+        for (Hero h : heros)
+            maxLevel = Math.max(maxLevel, h.getAttribute().getLevel());
 
-        List<Monster> list = Infos.getAllMonster();
-        for(int i = 0; i < ConstantVariables.SPAWN_MONSTER_COUNT; i++){
-            // get that monster
-            Monster m = list.remove(ran.nextInt(list.size()));
+        List<Monster> temp = new ArrayList<>();
+        for (Monster m : Infos.getAllMonster()) {
+            if (m.getAttribute().getLevel() == maxLevel)
+                temp.add(m);
+        }
+
+        // randomly choose monster from list
+        // do not check repeat
+        Random ran = new Random();
+        for (int i = 0; i < ConstantVariables.SPAWN_MONSTER_COUNT; i++) {
+            int idx = ran.nextInt(temp.size()); // it has at least one
+            Monster m = new Monster(temp.get(idx));
+
             monsters.add(m);
-
             // set alias
             totalMonster++; // increase to get a new id for this monster
             m.setAlias("M" + totalMonster); // monster's name could exceed 9
 
             // set position
-            Coordinate c = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * 3);
+            Coordinate c = new Coordinate(ConstantVariables.MONSTER_NEXUS_ROW_IDX, i * 3);
             m.enter(c, b.getEntry(c));
         }
     }

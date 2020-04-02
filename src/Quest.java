@@ -38,6 +38,7 @@ public class Quest extends RectangularRPGBoardGame {
     private void init() {
         creatNewBoard(ConstantVariables.DEFAULT_BOARD_LENGTH, ConstantVariables.DEFAULT_BOARD_WIDTH); // fixed size board
         setUpHero(); // choose hero and set its position
+        Monster.spawnMonster(getBoard(), monsters, heros);
     }
 
     /**
@@ -64,14 +65,15 @@ public class Quest extends RectangularRPGBoardGame {
             heros.add(h);
             
             // set alias according to the order of choosing them
-            h.setAlias("H" + i); 
+            h.setAlias("H" + (i+1)); 
 
             // set position for this hero
             Coordinate c = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * 3);
             h.enter(c, b.getEntry(c));
         }
-        OutputTools.printYellowString("These are your heros");
+        OutputTools.printYellowString("These are your heros, Input any key to continue");
         Hero.printHeroList(heros);
+        InputTools.getLine();
     }
 
 
@@ -111,7 +113,7 @@ public class Quest extends RectangularRPGBoardGame {
         
         if(counter == ConstantVariables.SPAWN_MONSTER_ROUNDS){ // spawn monster logic
             counter = 0;
-            Monster.spawnMonster(b, monsters);;
+            Monster.spawnMonster(b, monsters, heros);;
         }
 
         for(Hero h : heros){ // Regain 10% hp and mana at the beginning of every round.

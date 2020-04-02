@@ -21,12 +21,54 @@ public class RPGBoardEntry{
         this.type = type;
     }
 
-    // TODO: refactor printEntry
     /** 
+     * a string array represents a cell
      * @return return a string represents cell's content
      */ 
-    public String[] printEntry(){
-        return null;
+    public String[] getEntryString(){
+        String res[] = new String[]{"", "", ""};
+
+        res[0] += getLetter();
+        res[1] += '|';
+        res[2] += getLetter();
+    
+        for(int i = 1; i < 3; i++){
+            res[0] += " - " + getLetter();
+            res[2] += " - " + getLetter();
+        }
+        if(type == BoardEntryType.InAccessible){
+            res[1] += " X X X |";
+        }else{
+            if(h == null) res[1] += "   ";
+            else res[1] += " " + h.getAlias();
+
+            res[1] += " ";
+
+            if(m == null) res[1] += "   ";
+            else res[1] += m.getAlias() + " ";
+
+            res[1] += '|';
+        }
+        return res;
+    }
+    private char getLetter(){
+        switch (type) {
+            case HeroNexus:
+            case MonsterNexus:
+                return 'N';
+            case InAccessible:
+                return 'I';
+            case Regular:
+                return 'P';
+            case Bush:
+                return 'B';
+            case Koulou:
+                return 'K';
+            case Cave: 
+                return 'C';
+            default:
+                return ' ';
+        }
     }
 
     public boolean beEnter(GameCharacter c){

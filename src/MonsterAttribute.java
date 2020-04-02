@@ -6,6 +6,10 @@ public class MonsterAttribute extends Attribute{
     private int defense;
     private int dogeChance;
 
+    MonsterAttribute(MonsterAttribute ma){
+        this(ma.getLevel(), ma.getDamage(), ma.getDefense(), ma.getDogeChance());
+    }
+
     MonsterAttribute(int _damage, int _defense, int _dogeChance){
         super();
         damage = _damage;

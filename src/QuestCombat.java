@@ -31,11 +31,11 @@ public class QuestCombat{
     public static void printDodgeInfo(GameCharacter attacker, GameCharacter target){
         f = new Formatter();
 
-        f.format(DOGE_MESSAGE_FORMAT, attacker.getName(), target.getName());
+        f.format(DOGE_MESSAGE_FORMAT, attacker.getAlias(), target.getAlias());
         if(attacker instanceof Monster){
-            OutputTools.printYellowString("Monster " + f.toString());
+            OutputTools.printGreenString("Monster " + f.toString());
         }else if(attacker instanceof Hero){
-            OutputTools.printYellowString("Hero " + f.toString());
+            OutputTools.printGreenString("Hero " + f.toString());
         }
     }
 
@@ -47,17 +47,17 @@ public class QuestCombat{
     public static void printDamageInfo(int damage, GameCharacter attacker, GameCharacter target){
         f = new Formatter();
 
-        f.format(DAMGE_MESSAGE_FORMAT, attacker.getName(), damage, target.getName());
+        f.format(DAMGE_MESSAGE_FORMAT, attacker.getAlias(), damage, target.getAlias());
         if(attacker instanceof Monster){
-            OutputTools.printYellowString("Monster " + f.toString());
+            OutputTools.printGreenString("Monster " + f.toString());
         }else if(attacker instanceof Hero){
-            OutputTools.printYellowString("Hero " + f.toString());
+            OutputTools.printGreenString("Hero " + f.toString());
         }
     }
 
     public static void printKillMessage(Hero h, int gold, int exp){
         f = new Formatter();
-        f.format(WIN_SURVIVE_MESSAGE, h.getName(), exp, gold);
+        f.format(WIN_SURVIVE_MESSAGE, h.getAlias(), exp, gold);
         OutputTools.printGreenString(f.toString());
     }
 }

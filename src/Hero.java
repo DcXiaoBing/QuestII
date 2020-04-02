@@ -7,7 +7,7 @@ public class Hero extends GameCharacter{
     public static final String HERO_INVENTORY_INDEX_INFO = "0 - return, 1 - weapon, 2 - armor, 3 - spell, 4 - potion, 5 - unequip weapon and armor.";
     private static String MOVE_FAIL = "The destination is inaccessible or out of boundary";
     private static final String GENERAL_INSTRUCTION_MESSAGE = "Input W/A/S/D to move, \"item\" to use item, \"info\" to check info, \"tele\" to teleport, \"quit\" to exit game.";
-    private static final String ATTACK_INSTRUCTION_MESSAGE = "One or more monster is around you, input \"attact\" to attack";
+    private static final String ATTACK_INSTRUCTION_MESSAGE = "One or more monster is around you, input \"attack\" to attack";
     private static final String CHOOSE_TARGET_MESSAGE = "Input the index of the monster you want. Input 0 to cancel.";
     private static final String NEXUS_INSTRUCTION_MESSAGE = "You are in Nexus, input \"buy\" to buy/sell";
     private static final String TELE_INSTRUCTION_MESSAGE = "Input the coordinate that you want to teleport or input -1,-1 to cancel tp.";
@@ -97,6 +97,7 @@ public class Hero extends GameCharacter{
      * Hero could move, use item, teleport, 'b', buy/sell, attack
      */
     public void act(RectangularRPGBoard b){
+        OutputTools.printYellowString(getAlias() + "'s turn to make move");
         List<Monster> targets = searchTarget(b); // get monster's around
 
         // print instrction according to wheter in nexus or has monster around
@@ -390,6 +391,11 @@ public class Hero extends GameCharacter{
         }
 
         return res;
+    }
+
+    public void die(RectangularRPGBoard b){
+        OutputTools.printRedString(getAlias() + " died. Respawn at Nexus.");
+        backToNexus(b);
     }
 
     /**

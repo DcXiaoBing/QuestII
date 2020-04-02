@@ -1,4 +1,5 @@
 import java.util.HashSet;
+import java.util.Random;
 
 /**
  * a class represents board with shape of rectangle
@@ -16,58 +17,62 @@ public class RectangularRPGBoard extends Board {
         initBoard();
     }
 
-    // TODO: need refactory
+    /**
+     * a function set board as it is
+     */
     public void initBoard() {
         // set all entry to empty first
-        for (int i = 0; i < getLength(); i++) for (int j = 0; j < getWidth(); j++) {
-            getBoard()[i][j] = new RPGBoardEntry();
+
+        // assign random type for all cell first
+        for(int i = 0; i < length; i++) for(int j = 0; j < width; j++){
+            board[i][j] = new RPGBoardEntry();
+            getEntry(i, j).setType(getRandomEmptyType());
+        }
+        
+        // set nexus
+        for(int j = 0; j < width; j++){
+            getEntry(ConstantVariables.MONSTER_NEXUS_ROW_IDX, j).setType(BoardEntryType.MonsterNexus); // monster nexus
+            getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, j).setType(BoardEntryType.HeroNexus);
         }
 
-        HashSet<Coordinate> seen = new HashSet<>();
-        int nonAccessibleCount = (int) (getLength() * getWidth() * ConstantVariables.nonAccessibleRate);
-        int marketCount = (int) (getLength() * getWidth() * ConstantVariables.marketRate);
-
-        // generate all non-accessible entry
-        for (int i = 0; i < nonAccessibleCount; i++) {
-            Coordinate coord = Coordinate.generateRandomCoordinate(getLength(), getWidth());
-            while (seen.contains(coord))
-                coord = Coordinate.generateRandomCoordinate(getLength(), getWidth());
-
-            getBoard()[coord.getX()][coord.getY()].setType(BoardEntryType.InAccessible);
+        // set lane sepeartor
+        for(int i = 0; i < length; i++){
+            getEntry(i, 2).setType(BoardEntryType.InAccessible);
+            getEntry(i, 5).setType(BoardEntryType.InAccessible);
         }
-
-        // generate all market entry
-        for (int i = 0; i < marketCount; i++) {
-            Coordinate coord = Coordinate.generateRandomCoordinate(getLength(), getWidth());
-            while (seen.contains(coord))
-                coord = Coordinate.generateRandomCoordinate(getLength(), getWidth());
-
-            getBoard()[coord.getX()][coord.getY()].setType(BoardEntryType.Market);
+    }
+    private BoardEntryType getRandomEmptyType(){
+        Random ran = new Random();
+        int idx = ran.nextInt(4);
+        switch (idx) {
+            case 0: return BoardEntryType.Regular;
+            case 1: return BoardEntryType.Bush;
+            case 2: return BoardEntryType.Koulou;
+            case 3: return BoardEntryType.Cave;
+            default:
+                break;
         }
+        return null;
     }
     
-    // TODO: need refactor
+    /**
+     * a function to print board. character use alias when print
+     */
     public void printBoard(){
         for(RPGBoardEntry[] row : board){
-            // to seperate from last line
-            printLineSeperator();
-            for(int i = 0; i < row.length; i++){
-                System.out.print("|" + row[i].toString() + " ");
+            String[] rowString = new String[]{"", "", ""};
+            for(int i = 0; i < width; i++){
+                String[] cell = row[i].getEntryString();
+                for(int k = 0; k < 3; k++) {
+                    rowString[k] += cell[k];
+                    if(i != width -1) rowString[k] += "  ";
+                }
             }
-            System.out.println("|");
+
+            for(String s: rowString) System.out.println(s);
+
+            System.out.println(); // print line seperator
         }
-        // to print the bottom of board
-        printLineSeperator();
-        System.out.println(ConstantVariables.ANSI_GREEN + MAP_MARK + ConstantVariables.ANSI_RESET);
-    }
-    // TODO: need refactory
-    private void printLineSeperator(){
-        for(int i = 0; i < width; i++){
-            // notice, we donot change line here
-            System.out.print("+--");
-        }
-        // print last char and change line
-        System.out.println("+");
     }
 
     /**
@@ -80,7 +85,7 @@ public class RectangularRPGBoard extends Board {
         boolean res = true;
 
         int laneIdx = ny / ConstantVariables.DEFAULT_LANE_WIDTH;
-        for(int i = 0; i <= nx; i++){
+        for(int i = width - 1; i >= nx; i--){
             if(getEntry(i, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH).hasMonster() || getEntry(i, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH + 1).hasMonster()){
                 res = false;
                 break;
