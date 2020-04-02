@@ -8,8 +8,8 @@ import java.util.Random;
 public class Quest extends RectangularRPGBoardGame {
     private static final String WELCOME_MESSAGE = "Welcom to Quest. You will play on a 8*8 board with 3 hero.";
     private static final String START_MESSAGE = "Game Start!";
-    private static String NO_COMBAT = "Nothing happen, press enter to continue";
     private static int defaultTeamCount = 1;
+    private int counter = 0; // counter for re-spawn monsters
 
     Random ran = new Random();
     List<Hero> heros; 
@@ -36,7 +36,7 @@ public class Quest extends RectangularRPGBoardGame {
      * initialize game: initialize board, initial position, Character choose, data
      */
     private void init() {
-        creatNewBoard(DEFAULT_BOARD_LENGTH, DEFAULT_BOARD_WIDTH); // fixed size board
+        creatNewBoard(ConstantVariables.DEFAULT_BOARD_LENGTH, ConstantVariables.DEFAULT_BOARD_WIDTH); // fixed size board
         setUpHero(); // choose hero and set its position
     }
 
@@ -48,7 +48,7 @@ public class Quest extends RectangularRPGBoardGame {
 
         // get hero. Displayed idx is 1-based
         List<Hero> list = Infos.getAllHeros();
-        for (int i = 0; i < DEFAULT_HERO_COUNT; i++) {
+        for (int i = 0; i < ConstantVariables.DEFAULT_HERO_COUNT; i++) {
             Hero.printHeroList(list);
             OutputTools.printYellowString(InputTools.CHOOSE_HERO_MESSAGE);
 
@@ -84,55 +84,42 @@ public class Quest extends RectangularRPGBoardGame {
      */
     private void gameStart(){
         RectangularRPGBoard b = getBoard();
-        int counter = 0; // counter for re-spawn monsters
+        
         
         while(isEnd() < 0){ // -1 not end, 0 - stale, 1 - player win, 2 - monster win
-
-            if(counter == ConstantVariables.SPAWN_MONSTER_ROUNDS){ // spawn monster logic
-                counter = 0;
-                Monster.spawnMonster(b, monsters);;
-            }
+            roundStart();
 
             // each monster make its move
             for(Monster m : monsters){
                 m.act(b);
             }
 
-            b.printBoard(); // print board once and get all input info
+            // print board once and get all input info
+            // do not print too much
+            b.printBoard(); 
             for(Hero h : heros){
                 h.act(b);
-
-                int dx = 0, dy = 0; // automatically set to 0
-                
-                
-
-                
             }
         }
     }
 
     /**
-     * a functoin hanlde the event when enter a cell
+     * a function handle things happened at round beginning
      */
-    public void enter(RPGBoardEntry e) {
-        if(e.getType() == BoardEntryType.Empty){ // empty entry
-            int dice = 1 + ran.nextInt(100); // dice 1~100
-            if(dice <= ConstantVariables.COMBAT_POSSIBILITY){ // combat
-                QuestCombat qc = new QuestCombat(heros);
-                qc.run();
-            }else{
-                OutputTools.printGreenString(NO_COMBAT);
-                InputTools.getLine(); // press enter
-            }
-        }else if(e.getType() == BoardEntryType.Market){ // market
-            Market m = new Market(heros);
-            m.start();
-        }
+    private void roundStart(){
+        RectangularRPGBoard b = getBoard();
         
+        if(counter == ConstantVariables.SPAWN_MONSTER_ROUNDS){ // spawn monster logic
+            counter = 0;
+            Monster.spawnMonster(b, monsters);;
+        }
+
+        for(Hero h : heros){ // Regain 10% hp and mana at the beginning of every round.
+            HeroAttribute ha = h.getAttribute();
+            ha.addCurHp((int)(ConstantVariables.heroHpRegainRate * ha.getCurHp()));
+            ha.addMana((int)(ConstantVariables.heroManaRegainRate * ha.getMana()));
+        }
     }
-
-
-
 
     public Hero chooseHero() {
         Hero.printHeroList(heros);
@@ -153,12 +140,23 @@ public class Quest extends RectangularRPGBoardGame {
             return heros.get(idx-1);
     }
 
-    @Override
     /**
-     * 
+     * ending condition. when hero or monster each opponent's nexus
      */
     public int isEnd() {
-        // quest is special, game do not end
-        return 0;
+        boolean heroWin = false, monsterWin = false; 
+        RectangularRPGBoard b = getBoard();
+
+        for(int j = 0; j < b.getWidth() && !heroWin; j++){
+            if(b.getEntry(ConstantVariables.MONSTER_NEXUS_ROW_IDX, j).hasHero()){ // check herowin
+                heroWin = true;
+            }
+            if(b.getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, j).hasMonster()){ // check monster win
+                monsterWin = true;
+            }
+        }
+        if(heroWin) return 1;
+        if(monsterWin) return 2;
+        return -1; // no one win
     }
 }

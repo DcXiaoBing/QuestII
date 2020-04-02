@@ -11,6 +11,9 @@ public class Hero extends GameCharacter{
     private static final String CHOOSE_TARGET_MESSAGE = "Input the index of the monster you want. Input 0 to cancel.";
     private static final String NEXUS_INSTRUCTION_MESSAGE = "You are in Nexus, input \"buy\" to buy/sell";
     private static final String TELE_INSTRUCTION_MESSAGE = "Input the coordinate that you want to teleport or input -1,-1 to cancel tp.";
+    private static final String BUY_SELL_NOT_NEXUS_ERROR = "There are no monster around you!";
+    private static final String NO_TARGET_ERROR = "There are no monster around you!";
+    private static final String BACK_NEXUS_MESSAGE = "You backed to nexus";
 
     private HeroAttribute attribute;
     private HeroType type;
@@ -123,7 +126,7 @@ public class Hero extends GameCharacter{
                     acted = move(b, dx, dy);
                     break;
                 case "ITEM":
-                    acted = useItem();
+                    acted = useItem(b);
                     break;
                 case "TELE":
                     acted = teleport(b);
@@ -131,15 +134,23 @@ public class Hero extends GameCharacter{
                 case "B": 
                     acted = backToNexus(b);
                     break;
-                case "BUY": // do not count as move
-                    Market m = new Market();
-                    m.start(this);
+                case "BUY": // do not count as move, but need to be at nexus
+                    if(getCell().getType() != BoardEntryType.HeroNexus){
+                        OutputTools.printRedString(BUY_SELL_NOT_NEXUS_ERROR);
+                    }else{
+                        Market m = new Market();
+                        m.start(this);
+                    }
                     break;
                 case "INFO":
                     Hero.printSingleHero(this);
                     break;
                 case "ATTACK":
-                    acted = attack(targets);
+                    if(targets.isEmpty()){ // no target to attack
+                        OutputTools.printRedString(NO_TARGET_ERROR);
+                    }else{
+                        acted = attack(targets);
+                    }
                     break;
                 default:
                     System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
@@ -178,7 +189,6 @@ public class Hero extends GameCharacter{
         // only need choose target when more than one
         Monster target = chooseTarget(targets);
         if(target == null) return false; // cancel this operation
-        
 
         if(QuestCombat.dodge(target.getDogeChance())){
             QuestCombat.printDodgeInfo(this, target);
@@ -186,9 +196,34 @@ public class Hero extends GameCharacter{
             int damage = Math.max(0, getDamage() - target.getDefense());
 
             target.getAttribute().addCurHp(-damage);
+            if(target.getAttribute().getCurHp() <= 0){
+                kill(targets);
+            }
             QuestCombat.printDamageInfo(damage, this, target);
         }
         return true;
+    }
+
+    /**
+     * handle the reward after combat.
+     * A little bit slow, can optimize after
+     * @param targets
+     */
+    public void kill(List<Monster> targets){
+        Iterator<Monster> it = targets.iterator();
+        while(it.hasNext()){
+            Monster m = it.next();
+            HeroAttribute ha = getAttribute();
+            if(m.getAttribute().getCurHp() <= 0) it.remove();
+            else continue;
+
+            int exp = ConstantVariables.heroCombatExpRate;
+            int gold = ConstantVariables.heroCombatGoldRate * m.getAttribute().getLevel();
+            ha.addCurExp(exp);
+            ha.addMoney(gold); // 100 * level
+
+            QuestCombat.printKillMessage(this, gold, exp);
+        }
     }
 
     /**
@@ -215,9 +250,9 @@ public class Hero extends GameCharacter{
      * a function for check inventory and use
      * @return whether hero use item, ie, return false means hero did not use item
      */
-    public boolean useItem(){
+    public boolean useItem(RectangularRPGBoard b){
         boolean used = false;
-
+        List<Monster> targets = searchTarget(b);
         while(!used){
             OutputTools.printYellowString("Input index for what you want use");
             OutputTools.printYellowString(HERO_INVENTORY_INDEX_INFO);
@@ -235,7 +270,12 @@ public class Hero extends GameCharacter{
                     item = getItem(armors);
                     break;
                 case 3:
-                    item = getItem(spells);
+                    if(targets.isEmpty()){
+                        OutputTools.printRedString(NO_TARGET_ERROR);
+                        continue;
+                    }else{
+                        item = getItem(spells);
+                    }
                     break;
                 case 4:
                     item = getItem(potions);
@@ -252,13 +292,11 @@ public class Hero extends GameCharacter{
             }
 
             if(item != null){
-                
-                useItem(item, m);
-                res = true;
-                exit = true;
+                useItem(item, chooseTarget(targets));
+                used = true;
             }
         }
-        return res;
+        return used;
     }
 
     /**
@@ -287,7 +325,7 @@ public class Hero extends GameCharacter{
             OutputTools.printGreenString("Use armor success");
         }else if(item instanceof Spell){
             Spell s = (Spell)item;
-            s.castSpell(m, attribute.getDexterity());
+            s.castSpell(m, attribute.getDexterity(getCell()));
         }else if(item instanceof Potion){
             Potion p = (Potion)item;
             p.usePotion(this);
@@ -390,8 +428,14 @@ public class Hero extends GameCharacter{
      */
     private boolean backToNexus(RectangularRPGBoard b){
         Coordinate c = getCoord();
+        OutputTools.printYellowString(BACK_NEXUS_MESSAGE);
+        
+        // recover some hp if less than a value
+        if(attribute.getCurHp() < attribute.getLevel() * ConstantVariables.heroHpRate){
+            OutputTools.printYellowString("You recovered some hp");
+            attribute.setHpByLevel();
+        }
         // find it lane's empty nexus and put it there
-
         // laneCol = laneIdx * 3, laneIdx * 3 + 1
         Coordinate nc = null;
         int laneIdx = c.getY() / ConstantVariables.DEFAULT_LANE_WIDTH;
@@ -454,7 +498,7 @@ public class Hero extends GameCharacter{
 
     // compute damage in battle
     public int getDamage(){
-        return (int)((attribute.getStrength() + getWeaponDamage()) * ConstantVariables.heroDamageRate);
+        return (int)((attribute.getStrength(getCell()) + getWeaponDamage()) * ConstantVariables.heroDamageRate);
     }
     public int getWeaponDamage(){
         if(equipedWeapon == null) return 0;
@@ -477,7 +521,7 @@ public class Hero extends GameCharacter{
 
     // compute dogechance in battle
     public int getDodgeChance(){
-        return (int)(ConstantVariables.heroDogeRate * attribute.getDexterity());
+        return (int)(ConstantVariables.heroDogeRate * attribute.getAgility(getCell()));
     }
 
 

@@ -33,8 +33,8 @@ public class ConstantVariables {
     public static final int heroSpellDamgeRate = 10000;
     public static final double heroSpellEffectRate = -0.1;
 
-    public static final double heroHpRegainRate = 0.05;
-    public static final double heroManaRegainRate = 0.05;
+    public static final double heroHpRegainRate = 0.1;
+    public static final double heroManaRegainRate = 0.1;
 
     public static final int heroCombatExpRate = 2;
     public static final int heroCombatGoldRate = 100;

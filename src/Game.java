@@ -31,7 +31,7 @@ public abstract class Game {
 
     /**
      * to judge whether game end
-     * @return the state indicates how game end. -1 - not end, 0 - not end, 1 - player win, 2 - monster win.
+     * @return the state indicates how game end. -1 not end, 0 - stale, 1 - player win, 2 - monster win
      */
     public abstract int isEnd();
 
