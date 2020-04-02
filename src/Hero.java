@@ -4,9 +4,13 @@ import java.util.*;
  * a class represents hero in Quest
  */
 public class Hero extends GameCharacter{
-    public static final String HERO_INVENTORY_INDEX_INFO = ConstantVariables.ANSI_YELLOW
-    + "0 - return, 1 - weapon, 2 - armor, 3 - spell, 4 - potion, 5 - unequip weapon and armor."
-    + ConstantVariables.ANSI_RESET;
+    public static final String HERO_INVENTORY_INDEX_INFO = "0 - return, 1 - weapon, 2 - armor, 3 - spell, 4 - potion, 5 - unequip weapon and armor.";
+    private static String MOVE_FAIL = "The destination is inaccessible or out of boundary";
+    private static final String GENERAL_INSTRUCTION_MESSAGE = "Input W/A/S/D to move, \"item\" to use item, \"info\" to check info, \"tele\" to teleport, \"quit\" to exit game.";
+    private static final String ATTACK_INSTRUCTION_MESSAGE = "One or more monster is around you, input \"attact\" to attack";
+    private static final String CHOOSE_TARGET_MESSAGE = "Input the index of the monster you want. Input 0 to cancel.";
+    private static final String NEXUS_INSTRUCTION_MESSAGE = "You are in Nexus, input \"buy\" to buy/sell";
+    private static final String TELE_INSTRUCTION_MESSAGE = "Input the coordinate that you want to teleport or input -1,-1 to cancel tp.";
 
     private HeroAttribute attribute;
     private HeroType type;
@@ -30,8 +34,8 @@ public class Hero extends GameCharacter{
         spells = new ArrayList<>();
         potions = new ArrayList<>();
     }
-    Hero(String _name, Coordinate _coord, RPGBoardEntry _cell, HeroAttribute _attribute, HeroType _type){
-        super(_name, _coord, _cell);
+    Hero(String _name, String _alias, Coordinate _coord, RPGBoardEntry _cell, HeroAttribute _attribute, HeroType _type){
+        super(_name, _alias, _coord, _cell);
 
         attribute = _attribute;
         type = _type;
@@ -44,9 +48,7 @@ public class Hero extends GameCharacter{
     // upgrade logic
     public void upgrade(){
         if(attribute.getCurExp() < attribute.getMaxExp()) return ;
-
         attribute.levelUp();
-
         setAttributeWhenUpgrade();
     }
     public void setAttributeWhenUpgrade(){
@@ -87,50 +89,145 @@ public class Hero extends GameCharacter{
         }
     }
 
+    /**
+     * a function handles the action of hero.
+     * Hero could move, use item, teleport, 'b', buy/sell, attack
+     */
+    public void act(RectangularRPGBoard b){
+        List<Monster> targets = searchTarget(b); // get monster's around
 
-    // name, type, level, curHp, mana, money, curExp, maxExp, str, dex, agi
-    //  20    10     5     5      5      7       5      5      8    9    7
-    private static final String HERO_INFO_SEPERATOR = "|-----|--------------------|----------|-----|-----|-----|-------|------|-----|----------|----------|----------|";
-    private static final String HERO_INFO_HEADER = "|Index|  Character   Name  |   Type   |Level|CurHp|Mana | Money |curExp|upExp|strength  |dexterity |agility   |";
-    private static final String HERO_INFO_FORMAT = "|%-5d|%-20s|%-10s|%-5d|%-5d|%-5d|%-7d|%-6d|%-5d|%-10d|%-10d|%-10d|%n";
-    public static void printHeroList(List<Hero> list){
-        if(OutputTools.emptyList(list)) return;
+        // print instrction according to wheter in nexus or has monster around
+        OutputTools.printYellowString(GENERAL_INSTRUCTION_MESSAGE);
+        if(!targets.isEmpty()) OutputTools.printYellowString(ATTACK_INSTRUCTION_MESSAGE);
+        if(getCell().getType() == BoardEntryType.HeroNexus) OutputTools.printYellowString(NEXUS_INSTRUCTION_MESSAGE);
 
-        System.out.println(HERO_INFO_SEPERATOR);
-        System.out.println(HERO_INFO_HEADER);
-        System.out.println(HERO_INFO_SEPERATOR);
-
-        int counter = 1;
-        for(Hero h : list){
-            HeroAttribute a = h.getAttribute();
-            System.out.format(HERO_INFO_FORMAT, counter, h.getName(), h.getType(), a.getLevel(), a.getCurHp(), a.getMana(), a.getMoney(), a.getCurExp(), a.getMaxExp(), a.getStrength(), a.getDexterity(), a.getAgility());
-            System.out.println(HERO_INFO_SEPERATOR);
-
-            counter++;
+        boolean acted = false;
+        while(!acted){
+            String instruction = InputTools.getLine().toUpperCase(); // transfered to upper case
+            int dx = 0, dy = 0;
+            switch (instruction) {
+                case "W":
+                    dx = -1;
+                    acted = move(b, dx, dy);
+                    break;
+                case "A":
+                    dy = -1;
+                    acted = move(b, dx, dy);
+                    break;
+                case "S":
+                    dx = 1;
+                    acted = move(b, dx, dy);
+                    break;
+                case "D":
+                    dy = 1;
+                    acted = move(b, dx, dy);
+                    break;
+                case "ITEM":
+                    acted = useItem();
+                    break;
+                case "TELE":
+                    acted = teleport(b);
+                    break;
+                case "B": 
+                    acted = backToNexus(b);
+                    break;
+                case "BUY": // do not count as move
+                    Market m = new Market();
+                    m.start(this);
+                    break;
+                case "INFO":
+                    Hero.printSingleHero(this);
+                    break;
+                case "ATTACK":
+                    acted = attack(targets);
+                    break;
+                default:
+                    System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
+                    break;
+            }
         }
     }
 
+    /**
+     * a function handle the move
+     * @param dx change of x coord
+     * @param dy change of y coord
+     * @return whether this opeartion successed
+     */
+    public boolean move(RectangularRPGBoard b, int dx, int dy) {
+        Coordinate heroPosition = getCoord();
+        Coordinate nc = new Coordinate(heroPosition.getX() + dx, heroPosition.getY() + dy);
 
-    // check inventory and use
-    // return false means hero did not use item
-    public boolean useItem(Monster m){
-        boolean exit = false, res = false;
-        while(!exit){
-            System.out.println(ConstantVariables.ANSI_YELLOW + "Input index for what you want use" + ConstantVariables.ANSI_RESET);
-            System.out.println(HERO_INVENTORY_INDEX_INFO);
+        boolean res = false;
+        if(b.validCoord(nc) && b.getEntry(nc).canEnter(this) && b.canMove(nc)){
+            enter(nc, b.getEntry(nc)); // enter
+            res = true;
+        }else{
+            OutputTools.printRedString(MOVE_FAIL);
+        }
 
-            int idx = InputTools.getAnInteger();
-            while(idx < 0 || idx > 5){
-                System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
-                System.out.println(HERO_INVENTORY_INDEX_INFO);
+        return res;
+    }
 
-                idx = InputTools.getAnInteger();
-            }
+    /**
+     * a function for hero to do common attack
+     * @param targets monsters nearby
+     * @return wheter attack success
+     */
+    public boolean attack(List<Monster> targets) {
+        // only need choose target when more than one
+        Monster target = chooseTarget(targets);
+        if(target == null) return false; // cancel this operation
+        
+
+        if(QuestCombat.dodge(target.getDogeChance())){
+            QuestCombat.printDodgeInfo(this, target);
+        }else{
+            int damage = Math.max(0, getDamage() - target.getDefense());
+
+            target.getAttribute().addCurHp(-damage);
+            QuestCombat.printDamageInfo(damage, this, target);
+        }
+        return true;
+    }
+
+    /**
+     * a function to choose monster when there are multiple monster
+     * @param targets
+     * @return the hero player want, null means cancel
+     */
+    private Monster chooseTarget(List<Monster> targets){
+        if(targets.size() == 1){
+            return targets.get(0);
+        }
+
+        // need player input
+        Monster.printMonsterList(targets);
+        int idx = InputTools.getAnIndex(CHOOSE_TARGET_MESSAGE, 0, targets.size());
+        if(idx == 0)
+            return null;
+        else
+            return targets.get(idx - 1);
+    }
+
+
+    /**
+     * a function for check inventory and use
+     * @return whether hero use item, ie, return false means hero did not use item
+     */
+    public boolean useItem(){
+        boolean used = false;
+
+        while(!used){
+            OutputTools.printYellowString("Input index for what you want use");
+            OutputTools.printYellowString(HERO_INVENTORY_INDEX_INFO);
+
+            int idx = InputTools.getAnIndex(HERO_INVENTORY_INDEX_INFO, 0, 5);            
             
             Item item = null;
             switch (idx) { // weapon, armor, spell, potion
                 case 0:
-                    return false; // did not use
+                    return false; // did not use and want quit
                 case 1:
                     item = getItem(weapons);
                     break;
@@ -143,18 +240,19 @@ public class Hero extends GameCharacter{
                 case 4:
                     item = getItem(potions);
                     break;
-                case 5:
+                case 5: // do not count as acted
                     armors.add(equipedArmor);
                     equipedArmor = null;
                     weapons.add(equipedWeapon);
                     equipedWeapon = null;
-                    System.out.println(ConstantVariables.ANSI_GREEN + "Weapon and Armor unequiped." + ConstantVariables.ANSI_RESET);
+                    OutputTools.printGreenString("Weapon and Armor unequiped.");
                     break;
                 default:
                     break;
             }
 
             if(item != null){
+                
                 useItem(item, m);
                 res = true;
                 exit = true;
@@ -237,8 +335,120 @@ public class Hero extends GameCharacter{
         }
     }
 
-    // TODO: handle respawn
-    public void respawn(){
+    /**
+     * a function to search hero in radius 1 of given coord.
+     * @param c the center
+     * @return list of heros in this range
+     */
+    private List<Monster> searchTarget(RectangularRPGBoard b){
+        List<Monster> res = new ArrayList<>();
+        Coordinate c = getCoord();
+
+        for(int x = Math.max(0, c.getX() - 1); x <= Math.min(b.getLength() - 1, c.getX() + 1); x++){
+            for(int y = Math.max(0, c.getY() - 1); y <= Math.min(b.getWidth() - 1, c.getY() + 1); y++){
+                RPGBoardEntry e = b.getEntry(x, y);
+                if(e.getMonster() != null) res.add(e.getMonster());
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * teleport operation
+     * @return whether teleport sucess
+     */
+    private boolean teleport(RectangularRPGBoard b){
+        OutputTools.printYellowString(TELE_INSTRUCTION_MESSAGE);
+
+        int[] nc = InputTools.getCoord();
+        if(nc[0] == -1 && nc[1] == -1) return false;
+        while(!b.validCoord(nc[0], nc[1]) && !b.canMove(nc[0], nc[1])){
+            if(nc[0] == -1 && nc[1] == -1) return false;
+            nc = InputTools.getCoord();
+        }
+
+        enter(nc[0], nc[1], b);
+        return true;
+    }
+
+
+
+    /**
+     * a function responsible for respawn hero, hero transfered back to nexus and recover some hp. Because different hero have different method to respawn, so put it here. 
+     * I can also use behavior design pattern to handle this.
+     * @param h the hero need to be respawn
+     */
+    public void reSpwanHero(RectangularRPGBoard b){
+        backToNexus(b); // set position.
+        getAttribute().setHpByLevel(); // recover hp by level
+    }
+    /**
+     * set a hero's position to its lane's nexus
+     * @param h the hero you want to set
+     * @return whether operation successed
+     */
+    private boolean backToNexus(RectangularRPGBoard b){
+        Coordinate c = getCoord();
+        // find it lane's empty nexus and put it there
+
+        // laneCol = laneIdx * 3, laneIdx * 3 + 1
+        Coordinate nc = null;
+        int laneIdx = c.getY() / ConstantVariables.DEFAULT_LANE_WIDTH;
+        if(b.getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH).canEnter(this)){
+            nc = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH);
+        }else if(b.getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH + 1).canEnter(this)){
+            nc = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH);
+        }
+        
+        // current lane is full, re-spwan to another lane
+        for(int i = 0; i < (1 + ConstantVariables.DEFAULT_BOARD_WIDTH / ConstantVariables.DEFAULT_BOARD_WIDTH) && nc == null; i++){
+            if(b.getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, i * ConstantVariables.DEFAULT_LANE_WIDTH).canEnter(this)){
+                nc = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * ConstantVariables.DEFAULT_LANE_WIDTH);
+            }else if(b.getEntry(ConstantVariables.HERO_NEXUS_ROW_IDX, i * ConstantVariables.DEFAULT_LANE_WIDTH + 1).canEnter(this)){
+                nc = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * ConstantVariables.DEFAULT_LANE_WIDTH + 1);
+            }
+        }
+
+        if(nc != null){
+            enter(nc, b.getEntry(nc));
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+    // name, type, level, curHp, mana, money, curExp, maxExp, str, dex, agi
+    //  20    10     5     5      5      7       5      5      8    9    7
+    private static final String HERO_INFO_SEPERATOR = "|-----|--------------------|----------|-----|-----|-----|-------|------|-----|----------|----------|----------|";
+    private static final String HERO_INFO_HEADER = "|Index|  Character   Name  |   Type   |Level|CurHp|Mana | Money |curExp|upExp|strength  |dexterity |agility   |";
+    private static final String HERO_INFO_FORMAT = "|%-5d|%-20s|%-10s|%-5d|%-5d|%-5d|%-7d|%-6d|%-5d|%-10d|%-10d|%-10d|%n";
+    public static void printHeroList(List<Hero> list){
+        if(OutputTools.emptyList(list)) return;
+
+        System.out.println(HERO_INFO_SEPERATOR);
+        System.out.println(HERO_INFO_HEADER);
+        System.out.println(HERO_INFO_SEPERATOR);
+
+        int counter = 1;
+        for(Hero h : list){
+            HeroAttribute a = h.getAttribute();
+            System.out.format(HERO_INFO_FORMAT, counter, h.getName(), h.getType(), a.getLevel(), a.getCurHp(), a.getMana(), a.getMoney(), a.getCurExp(), a.getMaxExp(), a.getStrength(), a.getDexterity(), a.getAgility());
+            System.out.println(HERO_INFO_SEPERATOR);
+
+            counter++;
+        }
+    }
+    
+    public static void printSingleHero(Hero h){
+        System.out.println(HERO_INFO_SEPERATOR);
+        System.out.println(HERO_INFO_HEADER);
+        System.out.println(HERO_INFO_SEPERATOR);
+
+        HeroAttribute a = h.getAttribute();
+        System.out.format(HERO_INFO_FORMAT, 1, h.getName(), h.getType(), a.getLevel(), a.getCurHp(), a.getMana(), a.getMoney(), a.getCurExp(), a.getMaxExp(), a.getStrength(), a.getDexterity(), a.getAgility());
+        System.out.println(HERO_INFO_SEPERATOR);
     }
     
 
@@ -266,7 +476,7 @@ public class Hero extends GameCharacter{
     }
 
     // compute dogechance in battle
-    public int getDodgeChange(){
+    public int getDodgeChance(){
         return (int)(ConstantVariables.heroDogeRate * attribute.getDexterity());
     }
 

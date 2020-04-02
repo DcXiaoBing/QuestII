@@ -1,4 +1,6 @@
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * a class represents monster in Quest
@@ -6,17 +8,129 @@ import java.util.List;
 public class Monster extends GameCharacter{
     private MonsterAttribute attribute;
     private MonsterType type;
+    private static int totalMonster = 0;
+
+    private static Random ran = new Random();
 
     Monster(String _name, MonsterAttribute _attribute, MonsterType _type) {
         super(_name);
         attribute = _attribute;
         type = _type;
     }
-    Monster(String _name, Coordinate _coord, RPGBoardEntry _cell, MonsterAttribute _attribute, MonsterType _type) {
-        super(_name, _coord, _cell);
+    Monster(String _name, String _alias, Coordinate _coord, RPGBoardEntry _cell, MonsterAttribute _attribute, MonsterType _type) {
+        super(_name, _alias, _coord, _cell);
         attribute = _attribute;
         type = _type;
     }
+
+    /**
+     * a function handle monster' ai. Move forward unless has target to attack. Random attack a hero when have multiple target.
+     * @param m the reference to the monster who wants to act
+     */
+    public void act(RectangularRPGBoard b){
+        List<Hero> targets = searchTargets(b);
+        
+        if(targets.isEmpty()){ // no target, move forward
+            move(b);
+        }else{ // attack hero randomly
+            attack(targets);
+        }
+    }
+
+    /**
+     * a function handle monster's move
+     * @return return whether monster move success. return false when no empty entry around this monster
+     */
+    public boolean move(RectangularRPGBoard b){
+        Coordinate curCoord = getCoord();
+        Coordinate newCoord = new Coordinate(curCoord.getX() + ConstantVariables.MONSTER_DIRECTION,  curCoord.getY());
+        
+        // can go straight. When reach nexus, game will end, so
+        if(b.validCoord(newCoord) && b.getEntry(newCoord).canEnter(this)){
+            this.enter(newCoord, b.getEntry(newCoord));
+            return true;
+        }
+
+        // try to go left
+        newCoord = new Coordinate(curCoord.getX(), curCoord.getY() - 1);
+        if(b.validCoord(newCoord) && b.getEntry(newCoord).canEnter(this)){ 
+            this.enter(newCoord, b.getEntry(newCoord));
+            return true;
+        }
+
+        // try to go right
+        newCoord = new Coordinate(curCoord.getX(), curCoord.getY() + 1);
+        if(b.validCoord(newCoord) && b.getEntry(newCoord).canEnter(this)){
+            this.enter(newCoord, b.getEntry(newCoord));
+            return true;
+        }
+
+        return false;
+    }
+    
+    /**
+     * a function handle monster's attack. Randomly choose an hero to attack when there are more than 1 target.
+     * @param targets list of heros that monster can attack. Need to contain at least one target
+     */
+    private void attack(List<Hero> targets){
+        Hero target = targets.get(ran.nextInt(targets.size()));
+
+        if(QuestCombat.dodge(target.getDodgeChance())){
+            QuestCombat.printDodgeInfo(this, target);
+        }else{
+            int damage = Math.max(0, getDamage() - target.getDefense());
+
+            target.getAttribute().addCurHp(-damage);
+            QuestCombat.printDamageInfo(damage, this, target);
+        }
+    }
+
+    /**
+     * a function to search hero in radius 1 of given coord. Because monster might have different search target logic, so I didn't put this function in GameCharacter class.
+     * @param c the center
+     * @return list of heros in this range
+     */
+    private List<Hero> searchTargets(RectangularRPGBoard b){
+        List<Hero> res = new ArrayList<>();
+        Coordinate c = getCoord();
+
+        for(int x = Math.max(0, c.getX() - 1); x <= Math.min(b.getLength() - 1, c.getX() + 1); x++){
+            for(int y = Math.max(0, c.getY() - 1); y <= Math.min(b.getWidth() - 1, c.getY() + 1); y++){
+                RPGBoardEntry e = b.getEntry(x, y);
+                if(e.getHero() != null) res.add(e.getHero());
+            }
+        }
+        
+        return res;
+    }
+    
+    public boolean isAlive(){
+        return getAttribute().getCurHp() > 0;
+    }
+
+    /**
+     * generate monster randomly from list, and set alias by its order of generate
+     */
+    public static void spawnMonster(RectangularRPGBoard b, List<Monster> monsters){
+
+        List<Monster> list = Infos.getAllMonster();
+        for(int i = 0; i < ConstantVariables.SPAWN_MONSTER_COUNT; i++){
+            // get that monster
+            Monster m = list.remove(ran.nextInt(list.size()));
+            monsters.add(m);
+
+            // set alias
+            totalMonster++; // increase to get a new id for this monster
+            m.setAlias("M" + totalMonster); // monster's name could exceed 9
+
+            // set position
+            Coordinate c = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * 3);
+            m.enter(c, b.getEntry(c));
+        }
+    }
+
+
+
     // name, type, level, curHp  damage defense  dodge
     //  20    15     5      8      8       8       8
     private static final String MONSTER_INFO_SEPERATOR = "|-----|--------------------|---------------|-----|--------|--------|--------|--------|";
@@ -37,14 +151,6 @@ public class Monster extends GameCharacter{
 
             counter++;
         }
-    }
-    public boolean isAlive(){
-        return getAttribute().getCurHp() > 0;
-    }
-
-    // TODO: respawn monster in nexus.
-    public static void spawn(){
-
     }
 
     // monster's damage and defense are pre-defined

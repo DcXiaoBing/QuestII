@@ -5,8 +5,6 @@ public class RPGBoardEntry{
     private Hero h; // reference to hero in this entry
     private Monster m; // reference to monster in this entry
 
-
-
     private BoardEntryType type;
 
     RPGBoardEntry(){
@@ -31,7 +29,7 @@ public class RPGBoardEntry{
         return null;
     }
 
-    public boolean enter(GameCharacter c){
+    public boolean beEnter(GameCharacter c){
         if(canEnter(c)){
             if(c instanceof Monster){
                 m = (Monster)c;
@@ -43,7 +41,7 @@ public class RPGBoardEntry{
         return false;
     }
 
-    public void leave(GameCharacter c){
+    public void beLeft(GameCharacter c){
         if(c instanceof Monster){
             m = null;
         }else if(c instanceof Hero){
@@ -59,6 +57,13 @@ public class RPGBoardEntry{
         }
 
         return false;
+    }
+
+    public boolean hasHero(){
+        return h != null;
+    }
+    public boolean hasMonster(){
+        return m != null;
     }
 
     public Hero getHero() {

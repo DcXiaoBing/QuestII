@@ -5,8 +5,7 @@ import java.util.*;
  */
 public class Market {
 
-    public static final String MARKET_BUY_SALE_MESSAGE = ConstantVariables.ANSI_YELLOW
-            + "Input a number. 0 - return, 1 - buy, 2 - sell." + ConstantVariables.ANSI_RESET;
+    public static final String MARKET_BUY_SALE_MESSAGE = "Input a number. 0 - return, 1 - buy, 2 - sell.";
 
     public static final String MARKET_INDEX_INFO = ConstantVariables.ANSI_YELLOW
             + "0 - return, 1 - weapon, 2 - armor, 3 - spell, 4 - potion."
@@ -27,12 +26,44 @@ public class Market {
     List<Spell> spells;
     List<Potion> potions;
 
+    Market() {
+        this.heros = null;
+        weapons = Infos.getAllWeapons();
+        armors = Infos.getAllArmors();
+        spells = Infos.getAllSpells();
+        potions = Infos.getAllPotions();
+    }
+
     Market(List<Hero> heros) {
         this.heros = heros;
         weapons = Infos.getAllWeapons();
         armors = Infos.getAllArmors();
         spells = Infos.getAllSpells();
         potions = Infos.getAllPotions();
+    }
+
+    /**
+     * buy things with designated hero
+     * @param h
+     */
+    public void start(Hero h){
+        OutputTools.printYellowString(MARKET_BUY_SALE_MESSAGE);
+        int idx = InputTools.getAnInteger();
+
+        while(idx < 0 || idx > 2){
+            System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
+            System.out.println(MARKET_BUY_SALE_MESSAGE);
+
+            idx = InputTools.getAnInteger();
+        }
+
+        switch (idx) {
+            case 0: return;
+            case 1: buyStart(h);
+            case 2: sellStart(h);
+
+            default: break;
+        }
     }
 
     // choose hero
@@ -42,8 +73,7 @@ public class Market {
         Hero h = chooseHero();
 
         while(h != null){
-
-            System.out.println(MARKET_BUY_SALE_MESSAGE);
+            OutputTools.printYellowString(MARKET_BUY_SALE_MESSAGE);
             int idx = InputTools.getAnInteger();
             while(idx < 0 || idx > 2){
                 System.out.println(InputTools.ILLEGAL_VALUE_ERROR);

@@ -6,151 +6,107 @@ import java.util.Random;
  * a class represents game Quest it has rules of this game
  */
 public class Quest extends RectangularRPGBoardGame {
-    private static String SET_BOARD_MESSAGE = "input the board size you want. format : length,width. length and width should between 6 to 10";
-    private static String CHOOSE_HERO_COUNT_MESSAGE = "input the count of the hero, between 1~3";
-    private static String CHOOSE_HERO_MESSAGE = "input the index of the hero you want. Index might change after a choose";
-    
-    private static String INPUT_INSTRUCTION_MESSAGE = "Input W/A/S/D to move, item to check inventory, info to show hero info, quit to exit game.";
-
-    private static String MOVE_FAIL = "The destination is inaccessible or out of boundary";
+    private static final String WELCOME_MESSAGE = "Welcom to Quest. You will play on a 8*8 board with 3 hero.";
+    private static final String START_MESSAGE = "Game Start!";
     private static String NO_COMBAT = "Nothing happen, press enter to continue";
-
-    
-
-    private static int minLength = 8, maxLength = 8;
-    private static int minWidth = 8, maxWidth = 8;
     private static int defaultTeamCount = 1;
-    private static int minHeroCount = 1, maxHeroCount = 3;
 
     Random ran = new Random();
-    Coordinate heroPosition;
-    List<Hero> heros;
+    List<Hero> heros; 
+    List<Monster> monsters; // list of monsters in this game
 
     Quest() {
-        super(minLength, maxLength, minWidth, maxWidth, defaultTeamCount);
+        super(ConstantVariables.DEFAULT_BOARD_LENGTH, ConstantVariables.DEFAULT_BOARD_LENGTH, ConstantVariables.DEFAULT_BOARD_WIDTH, ConstantVariables.DEFAULT_BOARD_WIDTH, defaultTeamCount);
+
         heros = new ArrayList<>();
+        monsters = new ArrayList<>();
     }
 
     /**
      * entrence of game
      */ 
     public void start() {
-        OutputTools.printWelCome(); // print welcome message
-
+        OutputTools.printYellowString(WELCOME_MESSAGE); // print welcome message
         init(); // init game
-
-        System.out.println("Game Start!");
-
-        // get instructions and game response
-        gameStart();
+        OutputTools.printYellowString(START_MESSAGE);
+        gameStart(); // get instructions and game response
     }
 
-
-    private void init() {
-        // initialize game: initialize board, initial position, Character choose, data
-        // related
-        setupBoard(); // set board by user's input
-        setUpInitialPosition(); // initialize the position
-        setUpHero(); // choose hero
-    }
     /**
-     * a wrap of creatation of board
+     * initialize game: initialize board, initial position, Character choose, data
      */
-    private void setupBoard() {
-        OutputTools.printYellowString(SET_BOARD_MESSAGE);
-        int[] len = InputTools.getCoord();
-
-        while (!creatNewBoard(len[0], len[1])) {
-            OutputTools.printYellowString(SET_BOARD_MESSAGE);
-            len = InputTools.getCoord();
-        }
+    private void init() {
+        creatNewBoard(DEFAULT_BOARD_LENGTH, DEFAULT_BOARD_WIDTH); // fixed size board
+        setUpHero(); // choose hero and set its position
     }
 
+    /**
+     * handle the choose hero process
+     */
     private void setUpHero() {
-        // get hero count
-        OutputTools.printYellowString(CHOOSE_HERO_COUNT_MESSAGE);
-        int count = InputTools.getAnInteger();
-        while (count < minHeroCount || count > maxHeroCount) {
-            System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
-            OutputTools.printYellowString(CHOOSE_HERO_COUNT_MESSAGE);
-            count = InputTools.getAnInteger();
-        }
+        RectangularRPGBoard b = getBoard();
 
         // get hero. Displayed idx is 1-based
         List<Hero> list = Infos.getAllHeros();
-        for (int i = 0; i < count; i++) {
+        for (int i = 0; i < DEFAULT_HERO_COUNT; i++) {
             Hero.printHeroList(list);
-            OutputTools.printYellowString(CHOOSE_HERO_MESSAGE);
+            OutputTools.printYellowString(InputTools.CHOOSE_HERO_MESSAGE);
 
             int idx = InputTools.getAnInteger();
             while (idx - 1 < 0 || idx - 1 >= list.size()) {
                 System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
-                OutputTools.printYellowString(CHOOSE_HERO_MESSAGE);
+                OutputTools.printYellowString(InputTools.CHOOSE_HERO_MESSAGE);
                 idx = InputTools.getAnInteger();
             }
 
-            heros.add(list.get(idx - 1));
-            list.remove(idx - 1);
-        }
+            // get that hero
+            Hero h = list.remove(idx - 1);
+            heros.add(h);
+            
+            // set alias according to the order of choosing them
+            h.setAlias("H" + i); 
 
-        System.out.println("These are your heros");
+            // set position for this hero
+            Coordinate c = new Coordinate(ConstantVariables.HERO_NEXUS_ROW_IDX, i * 3);
+            h.enter(c, b.getEntry(c));
+        }
+        OutputTools.printYellowString("These are your heros");
         Hero.printHeroList(heros);
     }
 
-    private void setUpInitialPosition() {
-        RectangularRPGBoard b = getBoard();
-        heroPosition = Coordinate.generateRandomCoordinate(b.getLength(), b.getWidth());
-        BoardEntryType t = b.getBoard()[heroPosition.getX()][heroPosition.getY()].getType();
-        while (t == BoardEntryType.InAccessible) {
-            heroPosition = Coordinate.generateRandomCoordinate(b.getLength(), b.getWidth());
-            t = b.getBoard()[heroPosition.getX()][heroPosition.getY()].getType();
-        }
-    }
+
+
+
+
 
     /**
      * a function responsible for running game
      */
     private void gameStart(){
-        // use while(true) because there are no specific end criterion
-        while(true){
-            int dx = 0, dy = 0; // automatically set to 0
-            
-            getBoard().printBoard(heroPosition);
-            System.out.println(INPUT_INSTRUCTION_MESSAGE);
+        RectangularRPGBoard b = getBoard();
+        int counter = 0; // counter for re-spawn monsters
+        
+        while(isEnd() < 0){ // -1 not end, 0 - stale, 1 - player win, 2 - monster win
 
-            String instruction = InputTools.getLine().toUpperCase(); // transfered to upper case
-            switch (instruction) {
-                case "W":
-                    dx = -1;
-                    makeMove(dx, dy);
-                    break;
-                case "A":
-                    dy = -1;
-                    makeMove(dx, dy);
-                    break;
-                case "S":
-                    dx = 1;
-                    makeMove(dx, dy);
-                    break;
-                case "D":
-                    dy = 1;
-                    makeMove(dx, dy);
-                    break;
-                case "ITEM":
-                    Hero h = chooseHero();
-                    while(h != null){
-                        h.useItem(null);
-                        h = chooseHero();
-                    }
-                    break;
-                case "INFO":
-                    Hero.printHeroList(heros);
-                    OutputTools.printYellowString("Press enter to continue");
-                    InputTools.getLine();
-                    break;
-                default:
-                    System.out.println(InputTools.ILLEGAL_VALUE_ERROR);
-                    break;
+            if(counter == ConstantVariables.SPAWN_MONSTER_ROUNDS){ // spawn monster logic
+                counter = 0;
+                Monster.spawnMonster(b, monsters);;
+            }
+
+            // each monster make its move
+            for(Monster m : monsters){
+                m.act(b);
+            }
+
+            b.printBoard(); // print board once and get all input info
+            for(Hero h : heros){
+                h.act(b);
+
+                int dx = 0, dy = 0; // automatically set to 0
+                
+                
+
+                
             }
         }
     }
@@ -175,23 +131,7 @@ public class Quest extends RectangularRPGBoardGame {
         
     }
 
-    /**
-     * a function handle the move and corresponding event
-     * @param dx
-     * @param dy
-     */
-    public void makeMove(int dx, int dy) {
-        Coordinate nc = new Coordinate(heroPosition
-        .getX() + dx, heroPosition.getY() + dy);
 
-        if(getBoard().validCoord(nc) && !(getBoard().getBoard()[nc.getX()][nc.getY()].getType() == BoardEntryType.InAccessible)){
-            heroPosition = nc;
-            enter(getBoard().getEntry(heroPosition));
-        }else{
-            System.out.println(ConstantVariables.ANSI_RED + MOVE_FAIL + ConstantVariables.ANSI_RESET);
-            InputTools.getLine();
-        }
-    }
 
 
     public Hero chooseHero() {
@@ -215,7 +155,7 @@ public class Quest extends RectangularRPGBoardGame {
 
     @Override
     /**
-     * this function do not used in quest becasue game continous forever.
+     * 
      */
     public int isEnd() {
         // quest is special, game do not end

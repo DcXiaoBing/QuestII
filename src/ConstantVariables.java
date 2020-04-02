@@ -48,6 +48,12 @@ public class ConstantVariables {
     public static final double CAVE_AGILITY_BOOST = 0.1;
     public static final double KOULOU_STRENGTH_BOOST = 0.1;
 
+    public static final int HERO_DIRECTION = -1, MONSTER_DIRECTION = 1;
+    public static final int SPAWN_MONSTER_ROUNDS = 8, SPAWN_MONSTER_COUNT = 3;
+    public static final int DEFAULT_BOARD_LENGTH = 8, DEFAULT_BOARD_WIDTH = 8;
+    public static final int DEFAULT_HERO_COUNT = 3, DEFAULT_LANE_WIDTH = 3;
+    public static final int HERO_NEXUS_ROW_IDX = 7, MONSTER_NEXUS_ROW_IDX = 0;
+
     // color string
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";

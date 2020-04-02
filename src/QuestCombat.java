@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * a class handle the battle rule
+ * a class handle the battle related function
  */
-public class QuestCombat implements TurnBasedCombat {
+public class QuestCombat{
     public static final String DAMGE_MESSAGE_FORMAT = "%s deal %d damage to %s";
     public static final String DOGE_MESSAGE_FORMAT = "%s attacked, but %s doged.";
     private static final String COMBAT_INSTRUCTION_MESSAGE = "Input 1 to attack, 2 to use item, 3 to display hero info, 4 to display monster info";
@@ -14,43 +14,8 @@ public class QuestCombat implements TurnBasedCombat {
     public static final String WIN_DEAD_MESSAGE = "%s revived, now have %d hp";
     public static final String LOOSE_DEAD_MESSAGE = "%s loosed, now have %d hp and have %d money";
 
-    private List<Hero> heros;
-    private List<Monster> monsters;
-    private Random ran = new Random();
-    private Formatter f = new Formatter();
-    private int monsterIdx = 0, heroIdx = 0;
-
-    QuestCombat(List<Hero> heros) {
-        this.heros = heros;
-        creatMonsters();
-        OutputTools.printRedString("You are attaced by some monster!");
-        Monster.printMonsterList(monsters);
-    }
-
-    /**
-     * creat monster according to level of hero
-     */
-    private void creatMonsters() {
-        monsters = new ArrayList<>();
-        int count = heros.size();
-        int maxLevel = 0;
-        for (Hero h : heros)
-            maxLevel = Math.max(maxLevel, h.getAttribute().getLevel());
-
-        List<Monster> temp = new ArrayList<>();
-        for (Monster m : Infos.getAllMonster()) {
-            if (m.getAttribute().getLevel() == maxLevel)
-                temp.add(m);
-        }
-
-        // randomly choose monster from list
-        // do not check repeat
-        Random ran = new Random();
-        for (int i = 0; i < count; i++) {
-            int idx = ran.nextInt(temp.size()); // it has at least one
-            monsters.add(temp.get(idx));
-        }
-    }
+    private static Random ran = new Random();
+    public static Formatter f = new Formatter();
 
     /**
      * a function hadle the combat.
@@ -101,20 +66,7 @@ public class QuestCombat implements TurnBasedCombat {
 
     public void makeMove(GameCharacter c) {
         if (c instanceof Monster) {
-            // get target
-            Monster m = (Monster)c;
-            Hero h = heros.get(getTarget(monsterIdx, heros));
-            if (doge(h.getDodgeChange())) {
-                f = new Formatter();
-                OutputTools.printGreenString(
-                        f.format("Monster " + DOGE_MESSAGE_FORMAT, m.getName(), h.getName()).toString());
-            } else {
-                int damage = Math.max(0, m.getDamage() - h.getDefense());
-                h.getAttribute().addCurHp(-damage);
-                f = new Formatter();
-                OutputTools.printGreenString(
-                        f.format("Monster " + DAMGE_MESSAGE_FORMAT, m.getName(), damage, h.getName()).toString());
-            }
+            
         } else if (c instanceof Hero) {
             boolean exit = false;
             while (!exit) {
@@ -133,7 +85,7 @@ public class QuestCombat implements TurnBasedCombat {
                     case 1:
                         // get target
                         exit = true;
-                        if (doge(m.getAttribute().getDogeChance())) {
+                        if (dodge(m.getAttribute().getDogeChance())) {
                             f = new Formatter();
                             OutputTools.printGreenString(
                                     f.format("Hero " + DOGE_MESSAGE_FORMAT, h.getName(), m.getName()).toString());
@@ -160,79 +112,45 @@ public class QuestCombat implements TurnBasedCombat {
         }
     }
 
-    private boolean doge(int dogeChance) {
+    /**
+     * a function to handle whether doge happens! Attack and spell can both be dodged
+     * @param dogeChance the possiblilty of doging an attack
+     * @return whether doge happens
+     */
+    public static boolean dodge(int dogeChance) {
         return 1 + ran.nextInt(100) <= dogeChance;
     }
 
     /**
-     * a function return the target of attack.
-     * 
-     * @param curIdx
-     * @param enemy
-     * @return
+     * a function to print dodge log
+     * @param attacker the character who do the attack
+     * @param target the target been attack
      */
-    private <E extends GameCharacter> int getTarget(int curIdx, List<E> enemy) {
-        // choose the one with same index if it is alive
-        // otherwise, choose the alive one with min idx
+    public static void printDodgeInfo(GameCharacter attacker, GameCharacter target){
+        f = new Formatter();
 
-        // tranfer idx
-        if (curIdx == 0)
-            curIdx = enemy.size() - 1;
-        else
-            curIdx -= 1;
-
-        if (enemy.get(curIdx).isAlive())
-            return curIdx;
-        for (int i = 0; i < enemy.size(); i++) {
-            if (enemy.get(i).isAlive())
-                return i;
-        }
-
-        return 0;
-    }
-
-    /**
-     * handle the logic when one round end
-     */
-    private void roundEnd() {
-        for (Hero h : heros) {
-            if (h.isAlive()) {
-                HeroAttribute ha = h.getAttribute();
-                ha.addCurHp((int) (ha.getCurHp() * ConstantVariables.heroHpRegainRate));
-                ha.addMana((int) (ha.getMana() * ConstantVariables.heroManaRegainRate));
-            }
+        f.format(DOGE_MESSAGE_FORMAT, attacker.getName(), target.getName());
+        if(attacker instanceof Monster){
+            OutputTools.printYellowString("Monster " + f.toString());
+        }else if(attacker instanceof Hero){
+            OutputTools.printYellowString("Hero " + f.toString());
         }
     }
 
-    // The fight ends only when the hp of either all the monsters or all the heroes
-    // is zeroed.
     /**
-     * a function to judge whether game ends
-     * 
-     * @param lastMove the one who make last attack. can be hero or monster.
-     * @return whether this game end. 0 - not end, 1 - hero win, 2 - monster win
+     * a function to print damage log
+     * @param attacker the character who do the attack
+     * @param target the target been attck
      */
-    public int isEnd(boolean isMonster) {
-        int res = 0;
-        if (!isMonster) { // hero move, check monster
-            res = 1;
-            for (Monster m : monsters) {
-                if (m.isAlive()) {
-                    res = 0;
-                    break;
-                }
-            }
-        } else if (isMonster) {
-            res = 2;
-            for (Hero h : heros) {
-                if (h.isAlive()) {
-                    res = 0;
-                    break;
-                }
-            }
-        }
+    public static void printDamageInfo(int damage, GameCharacter attacker, GameCharacter target){
+        f = new Formatter();
 
-        return res;
+        f.format(DAMGE_MESSAGE_FORMAT, attacker.getName(), damage, target.getName());
+        if(attacker instanceof Monster){
+            OutputTools.printYellowString("Monster " + f.toString());
+        }else if(attacker instanceof Hero){
+            OutputTools.printYellowString("Hero " + f.toString());
+        }
     }
 
     /**

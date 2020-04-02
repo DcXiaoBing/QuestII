@@ -5,7 +5,8 @@ import java.util.Scanner;
  */
 public class InputTools{
     public static String ILLEGAL_VALUE_ERROR = ConstantVariables.ANSI_RED + "Illeagle input, please retry" + ConstantVariables.ANSI_RESET;
-    public static String INPUT_INDEX_MESSAGE = ConstantVariables.ANSI_YELLOW + "Please input the index. Index might change after a choose." + ConstantVariables.ANSI_RESET;
+    public static String INPUT_INDEX_MESSAGE = ConstantVariables.ANSI_YELLOW + "Please input the index. Index might change." + ConstantVariables.ANSI_RESET;
+    public static String CHOOSE_HERO_MESSAGE = "Input the index of the hero you want. Index might change.";
     
     private static Scanner in = new Scanner(System.in);
 
@@ -89,6 +90,34 @@ public class InputTools{
         }
         System.out.println("------------------------------------------");
         return res;
+    }
+
+    /**
+     * get an index in the bound
+     * @param instruction the instructoin for inputing index
+     * @param min minimum value, included
+     * @param max maximum value, included
+     * @return the index user input
+     */
+    public static int getAnIndex(String instruction, int min, int max){
+        OutputTools.printYellowString(instruction);
+        int res = getAnInteger();
+        while(res < min || res > max){
+            OutputTools.printYellowString(ILLEGAL_VALUE_ERROR);
+            OutputTools.printYellowString(instruction);
+
+            res = getAnInteger();
+        }
+
+        return res;
+    }
+
+    /**
+     * a function realize the press key to continue function
+     */
+    public static void pressKeyToContinue(){
+        OutputTools.printYellowString("Press any key to continue");
+        getLine();
     }
 
     // use this function to get line

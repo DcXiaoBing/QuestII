@@ -70,6 +70,35 @@ public class RectangularRPGBoard extends Board {
         System.out.println("+");
     }
 
+    /**
+     * a function to check wheter has monster ahead so that hero cannot accoorss
+     * @param nx new x coord
+     * @param ny new y coord
+     * @return whether can move
+     */
+    public boolean canMove(int nx, int ny){
+        boolean res = true;
+
+        int laneIdx = ny / ConstantVariables.DEFAULT_LANE_WIDTH;
+        for(int i = 0; i <= nx; i++){
+            if(getEntry(i, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH).hasMonster() || getEntry(i, laneIdx * ConstantVariables.DEFAULT_LANE_WIDTH + 1).hasMonster()){
+                res = false;
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * a function to check wheter has monster ahead so that hero cannot accoorss
+     * @param c new coord
+     * @return whether can move
+     */
+    public boolean canMove(Coordinate c){
+        return canMove(c.getX(), c.getY());
+    }
+
     public int getLength() {
 		return length;
     }

@@ -1,15 +1,14 @@
+import java.util.Formatter;
 import java.util.List;
 
 /**
  * a class with all output related functions
  */
 public class OutputTools{
-    private static final String WELCOME_MESSAGE = "Welcom to Quest";
+    
+    public static Formatter f = new Formatter();
     private static final String EMPTY_LIST_MESSAGE = ConstantVariables.ANSI_RED + "list is empty" + ConstantVariables.ANSI_RESET;
 
-    public static void printWelCome(){
-        System.out.println(WELCOME_MESSAGE);
-    }
     public static boolean emptyList(List list){
         if(list == null || list.size() == 0){
             System.out.println(EMPTY_LIST_MESSAGE);
