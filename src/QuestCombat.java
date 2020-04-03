@@ -6,7 +6,7 @@ import java.util.Random;
  */
 public class QuestCombat{
     public static final String DAMGE_MESSAGE_FORMAT = "%s deal %d damage to %s";
-    public static final String DOGE_MESSAGE_FORMAT = "%s attacked, but %s doged.";
+    public static final String DOGE_MESSAGE_FORMAT = "%s attacked, but %s dodged.";
     public static final String WIN_SURVIVE_MESSAGE = "%s killed a monster, get %d exp and %d gold";
     public static final String WIN_DEAD_MESSAGE = "%s revived, now have %d hp";
     public static final String LOOSE_DEAD_MESSAGE = "%s loosed, now have %d hp and have %d money";
