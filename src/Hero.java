@@ -10,7 +10,7 @@ public class Hero extends GameCharacter{
     private static final String ATTACK_INSTRUCTION_MESSAGE = "One or more monster is around you, input \"attack\" to attack";
     private static final String CHOOSE_TARGET_MESSAGE = "Input the index of the monster you want. Input 0 to cancel.";
     private static final String NEXUS_INSTRUCTION_MESSAGE = "You are in Nexus, input \"buy\" to buy/sell";
-    private static final String TELE_INSTRUCTION_MESSAGE = "Input the coordinate that you want to teleport or input -1,-1 to cancel tp.";
+    private static final String TELE_INSTRUCTION_MESSAGE = "Input the coordinate that you want to teleport or input -1,-1 to cancel tp. Cannot tp to same lane.";
     private static final String BUY_SELL_NOT_NEXUS_ERROR = "There are no monster around you!";
     private static final String NO_TARGET_ERROR = "There are no monster around you!";
     private static final String BACK_NEXUS_MESSAGE = "You returned to the nexus";
@@ -51,6 +51,7 @@ public class Hero extends GameCharacter{
     // upgrade logic
     public void upgrade(){
         if(attribute.getCurExp() < attribute.getMaxExp()) return ;
+        OutputTools.printGreenString(getAlias() + " Upgrade!");
         attribute.levelUp();
         setAttributeWhenUpgrade();
     }
@@ -96,7 +97,7 @@ public class Hero extends GameCharacter{
      * a function handles the action of hero.
      * Hero could move, use item, teleport, 'b', buy/sell, attack
      */
-    public void act(RectangularRPGBoard b){
+    public void act(RectangularRPGBoard b, List<Monster> monsters){
         OutputTools.printYellowString(getAlias() + "'s turn to make move");
         List<Monster> targets = searchTarget(b); // get monster's around
 
@@ -127,7 +128,7 @@ public class Hero extends GameCharacter{
                     acted = move(b, dx, dy);
                     break;
                 case "ITEM":
-                    acted = useItem(b);
+                    acted = useItem(b, monsters);
                     break;
                 case "TELE":
                     acted = teleport(b);
@@ -150,7 +151,7 @@ public class Hero extends GameCharacter{
                     if(targets.isEmpty()){ // no target to attack
                         OutputTools.printRedString(NO_TARGET_ERROR);
                     }else{
-                        acted = attack(targets);
+                        acted = attack(targets, monsters);
                     }
                     break;
                 default:
@@ -184,9 +185,10 @@ public class Hero extends GameCharacter{
     /**
      * a function for hero to do common attack
      * @param targets monsters nearby
+     * @param monsters all monster list, use for delete monster die
      * @return wheter attack success
      */
-    public boolean attack(List<Monster> targets) {
+    public boolean attack(List<Monster> targets, List<Monster> monsters) {
         // only need choose target when more than one
         Monster target = chooseTarget(targets);
         if(target == null) return false; // cancel this operation
@@ -197,10 +199,11 @@ public class Hero extends GameCharacter{
             int damage = Math.max(0, getDamage() - target.getDefense());
 
             target.getAttribute().addCurHp(-damage);
-            if(target.getAttribute().getCurHp() <= 0){
-                kill(targets);
-            }
             QuestCombat.printDamageInfo(damage, this, target);
+            if(target.getAttribute().getCurHp() <= 0){
+                kill(monsters);
+                this.upgrade();
+            }
         }
         return true;
     }
@@ -251,7 +254,7 @@ public class Hero extends GameCharacter{
      * a function for check inventory and use
      * @return whether hero use item, ie, return false means hero did not use item
      */
-    public boolean useItem(RectangularRPGBoard b){
+    public boolean useItem(RectangularRPGBoard b, List<Monster> monsters){
         boolean used = false;
         List<Monster> targets = searchTarget(b);
         while(!used){
@@ -293,7 +296,7 @@ public class Hero extends GameCharacter{
             }
 
             if(item != null){
-                useItem(item, chooseTarget(targets));
+                useItem(item, targets, monsters);
                 used = true;
             }
         }
@@ -303,9 +306,10 @@ public class Hero extends GameCharacter{
     /**
      * a function wraps the use of an item
      * @param item the item want to use
-     * @param m the enemy target. Input null when do not need
+     * @param targets possible targets
+     * @param monsters all monsters' list, use for deletion 
      */
-    public void useItem(Item item, Monster m){
+    public void useItem(Item item, List<Monster> targets, List<Monster> monsters){
         if(item instanceof Weapon){
             Weapon w = (Weapon)item;
             if(equipedWeapon == null){
@@ -325,8 +329,13 @@ public class Hero extends GameCharacter{
             }
             OutputTools.printGreenString("Use armor success");
         }else if(item instanceof Spell){
+            Monster m = chooseTarget(targets);
             Spell s = (Spell)item;
             s.castSpell(m, attribute.getDexterity(getCell()));
+            if(m.getAttribute().getCurHp() <= 0){
+                kill(monsters);
+                upgrade();
+            }
         }else if(item instanceof Potion){
             Potion p = (Potion)item;
             p.usePotion(this);
@@ -407,8 +416,10 @@ public class Hero extends GameCharacter{
 
         int[] nc = InputTools.getCoord();
         if(nc[0] == -1 && nc[1] == -1) return false;
-        while(!b.validCoord(nc[0], nc[1]) && !b.canMove(nc[0], nc[1])){
+        while(!b.validCoord(nc[0], nc[1]) && !b.canMove(nc[0], nc[1]) && !b.sameLane(getCoord(), new Coordinate(nc[0], nc[1]))){
             if(nc[0] == -1 && nc[1] == -1) return false;
+
+            OutputTools.printYellowString(TELE_INSTRUCTION_MESSAGE);
             nc = InputTools.getCoord();
         }
 

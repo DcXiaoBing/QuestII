@@ -6,6 +6,7 @@ import java.util.Random;
  * a class represents game Quest it has rules of this game
  */
 public class Quest extends RectangularRPGBoardGame {
+    private static String END_MESSAGE = "Game End!";
     private static final String WELCOME_MESSAGE = "Welcom to Quest. You will play on a 8*8 board with 3 hero.";
     private static final String START_MESSAGE = "Game Start!";
     private static int defaultTeamCount = 1;
@@ -87,8 +88,8 @@ public class Quest extends RectangularRPGBoardGame {
     private void gameStart(){
         RectangularRPGBoard b = getBoard();
         
-        
-        while(isEnd() < 0){ // -1 not end, 0 - stale, 1 - player win, 2 - monster win
+        int status = isEnd();
+        while(status < 0){ // -1 not end, 0 - stale, 1 - player win, 2 - monster win
             roundStart();
 
             // each monster make its move
@@ -102,7 +103,12 @@ public class Quest extends RectangularRPGBoardGame {
             for(Hero h : heros){
                 h.act(b);
             }
+
+            status = isEnd();
         }
+
+        printWinningMessage(status);
+        end();
     }
 
     /**
@@ -160,5 +166,18 @@ public class Quest extends RectangularRPGBoardGame {
         if(heroWin) return 1;
         if(monsterWin) return 2;
         return -1; // no one win
+    }
+
+    @Override
+    public void end(){
+        OutputTools.printYellowString(END_MESSAGE);
+    }
+
+    private void printWinningMessage(int status){
+        if(status == 1){
+            OutputTools.printGreenString("Hero Win!");
+        }else{
+            OutputTools.printGreenString("Monster Win!");
+        }
     }
 }

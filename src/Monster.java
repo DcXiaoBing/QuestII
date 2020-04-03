@@ -135,6 +135,10 @@ public class Monster extends GameCharacter{
             int idx = ran.nextInt(temp.size()); // it has at least one
             Monster m = new Monster(temp.get(idx));
 
+            m.getAttribute().setCurHp(1);
+            m.getAttribute().setDamage(1);
+            m.getAttribute().setDogeChance(1);
+            m.getAttribute().setDefense(1);
             monsters.add(m);
             // set alias
             totalMonster++; // increase to get a new id for this monster

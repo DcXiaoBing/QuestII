@@ -6,7 +6,7 @@ import java.util.Random;
  * abstract method from Game, so it keeps abstract
  */
 public abstract class RectangularRPGBoardGame extends Game {
-    private static String END_MESSAGE = "Game End!";
+    
     private static String CREAT_BOARD_FAIL = "board creation failed, check input range";
     private static String CREAT_BOARD_SUCCESS = "board creation success";
 
@@ -78,10 +78,5 @@ public abstract class RectangularRPGBoardGame extends Game {
 
     public RectangularRPGBoard getBoard() {
         return board;
-    }
-
-    @Override
-    public void end() {
-        System.out.println(END_MESSAGE);
     }
 }

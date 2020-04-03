@@ -5,7 +5,6 @@ import java.util.Random;
  * a class represents board with shape of rectangle
  */
 public class RectangularRPGBoard extends Board {
-    private static String MAP_MARK = "M means market, X means inaccessible, O is hero";
 
     private final int length, width;
     private RPGBoardEntry[][] board;
@@ -102,6 +101,19 @@ public class RectangularRPGBoard extends Board {
      */
     public boolean canMove(Coordinate c){
         return canMove(c.getX(), c.getY());
+    }
+
+    /**
+     * a function to judge whether to 
+     * @param a
+     * @param b
+     * @return
+     */
+    public boolean sameLane(Coordinate a, Coordinate b){
+        if(a.getY() / ConstantVariables.DEFAULT_LANE_WIDTH == b.getY() / ConstantVariables.DEFAULT_LANE_WIDTH)
+            return true;
+        else
+            return false;
     }
 
     public int getLength() {
