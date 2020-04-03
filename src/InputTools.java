@@ -4,7 +4,7 @@ import java.util.Scanner;
  * a class assembles Input functions used in this program
  */
 public class InputTools{
-    public static String ILLEGAL_VALUE_ERROR = ConstantVariables.ANSI_RED + "Illeagle input, please retry" + ConstantVariables.ANSI_RESET;
+    public static String ILLEGAL_VALUE_ERROR = ConstantVariables.ANSI_RED + "Illegal input, please retry" + ConstantVariables.ANSI_RESET;
     public static String INPUT_INDEX_MESSAGE = ConstantVariables.ANSI_YELLOW + "Please input the index. Index might change." + ConstantVariables.ANSI_RESET;
     public static String CHOOSE_HERO_MESSAGE = "Input the index of the hero you want. Index might change.";
     
