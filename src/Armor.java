@@ -12,7 +12,7 @@ public class Armor extends Item {
     // name price minlevel damage sigleHand
     //  15    7      8       8        9
     private static final String ARMOR_INFO_SEPERATOR = "|-----|---------------|-------|--------|--------|";
-    private static final String ARMOR_INFO_HEADER = "|index|  Armor  Name  | Pirce |minLevel| damage |";
+    private static final String ARMOR_INFO_HEADER = "|index|  Armor  Name  | Price |minLevel| damage |";
     private static final String ARMOR_INFO_FORMAT = "|%-5d|%-15s|%-7d|%-8d|%-8d|%n";
     public static void printArmorList(List<Armor> list){
         if(OutputTools.emptyList(list)) return;
