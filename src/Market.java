@@ -136,7 +136,7 @@ public class Market {
     }
 
     private void printBuyHelpInfo(Hero h){
-        System.out.println(ConstantVariables.ANSI_GREEN + "This hero have money: " + h.getAttribute().getMoney() + ConstantVariables.ANSI_RESET);
+        System.out.println(ConstantVariables.ANSI_GREEN + "This hero has: " + h.getAttribute().getMoney() + " gold" + ConstantVariables.ANSI_RESET);
         System.out.println(InputTools.INPUT_INDEX_MESSAGE);
         System.out.println(ConstantVariables.ANSI_YELLOW + "Input 0 to return." + ConstantVariables.ANSI_RESET);
     }
@@ -331,7 +331,7 @@ public class Market {
                 ha.addMoney(list.get(idx).getPrice() / 2);
                 list.remove(idx);
 
-                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now have money: " + h.getAttribute().getMoney() + ConstantVariables.ANSI_RESET);
+                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now has: " + h.getAttribute().getMoney() + " gold" + ConstantVariables.ANSI_RESET);
                 System.out.println(SUCCESS_INFO);
                 InputTools.getLine();
             }
@@ -364,7 +364,7 @@ public class Market {
                 ha.addMoney(list.get(idx).getPrice() / 2);
                 list.remove(idx);
 
-                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now have money: " + h.getAttribute().getMoney() + ConstantVariables.ANSI_RESET);
+                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now has: " + h.getAttribute().getMoney() + " gold" + ConstantVariables.ANSI_RESET);
                 System.out.println(SUCCESS_INFO);
                 InputTools.getLine();
             }
@@ -397,7 +397,7 @@ public class Market {
                 ha.addMoney(list.get(idx).getPrice() / 2);
                 list.remove(idx);
 
-                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now have money: " + h.getAttribute().getMoney() + ConstantVariables.ANSI_RESET);
+                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now has: " + h.getAttribute().getMoney() + " gold" + ConstantVariables.ANSI_RESET);
                 System.out.println(SUCCESS_INFO);
                 InputTools.getLine();
             }
@@ -431,7 +431,7 @@ public class Market {
                 ha.addMoney(list.get(idx).getPrice() / 2);
                 list.remove(idx);
 
-                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now have money: " + h.getAttribute().getMoney() + ConstantVariables.ANSI_RESET);
+                System.out.println(ConstantVariables.ANSI_GREEN + "This hero now has: " + h.getAttribute().getMoney() + " gold" + ConstantVariables.ANSI_RESET);
                 System.out.println(SUCCESS_INFO);
                 InputTools.getLine();
             }
