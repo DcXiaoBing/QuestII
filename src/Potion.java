@@ -29,7 +29,7 @@ public class Potion extends Item{
     // name price minlevel effect amount
     //  15    7      8          15     
     private static final String POTION_INFO_SEPERATOR = "|-----|-----------------|-------|--------|---------------|";
-    private static final String POTION_INFO_HEADER = "|index|   Potion Name   | Pirce |minLevel| Effect Amount |";
+    private static final String POTION_INFO_HEADER = "|index|   Potion Name   | Price |minLevel| Effect Amount |";
     private static final String POTION_INFO_FORMAT = "|%-5d|%-17s|%-7d|%-8d|%-15d|%n";
 
     public static void printPotionList(List<Potion> list){
