@@ -18,7 +18,7 @@ public class Weapon extends Item{
     // name price minlevel damage sigleHand
     //  15    7      8       8        9
     private static final String WEAPON_INFO_SEPERATOR = "|-----|---------------|-------|--------|--------|----------|";
-    private static final String WEAPON_INFO_HEADER = "|index|  Weapon Name  | Pirce |minLevel| damage |singleHand|";
+    private static final String WEAPON_INFO_HEADER = "|index|  Weapon Name  | Price |minLevel| damage |singleHand|";
     private static final String WEAPON_INFO_FORMAT = "|%-5d|%-15s|%-7d|%-8d|%-8d|%-10s|%n";
     
     public static void printWeaponList(List<Weapon> list){
