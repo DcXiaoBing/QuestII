@@ -39,7 +39,7 @@ public class Spell extends Item{
     // name price minlevel damage  minMana type
     //  15    7      8       8        7     10
     private static final String SPELL_INFO_SEPERATOR = "|-----|---------------|-------|--------|--------|-------|----------|";
-    private static final String SPELL_INFO_HEADER = "|index|  Spell  Name  | Pirce |minLevel| damage |minMana|   Type   |";
+    private static final String SPELL_INFO_HEADER = "|index|  Spell  Name  | Price |minLevel| damage |minMana|   Type   |";
     private static final String SPELL_INFO_FORMAT = "|%-5d|%-15s|%-7d|%-8d|%-8d|%-7d|%-10s|%n";
     public static void printSpellList(List<Spell> list){
         if(OutputTools.emptyList(list)) return;
