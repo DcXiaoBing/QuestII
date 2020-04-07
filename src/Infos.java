@@ -24,7 +24,7 @@ import java.util.*;
         int[] exps = new int[]{7, 8, 6, 7};
         for(int i = 0; i < names.length; i++){
             attribute = new HeroAttribute(manas[i], strengths[i], agilitys[i], dexteritys[i], moneys[i], exps[i]);
-            res.add(new Hero(names[i], attribute, HeroType.Warriors));
+            res.add(new Warrior(names[i], attribute));
         }
 
         // Name                   mana   stren  agil dexterity money experience
@@ -41,7 +41,7 @@ import java.util.*;
         exps = new int[]{7, 9, 5, 6};
         for(int i = 0; i < names.length; i++){
             attribute = new HeroAttribute(manas[i], strengths[i], agilitys[i], dexteritys[i], moneys[i], exps[i]);
-            res.add(new Hero(names[i], attribute, HeroType.Sorcerers));
+            res.add(new Sorcerer(names[i], attribute));
         }
 
         // Name                mana    stren   agil  dex   starting money starting experience
@@ -59,7 +59,7 @@ import java.util.*;
         exps = new int[]{7, 7, 4, 5};
         for(int i = 0; i < names.length; i++){
             attribute = new HeroAttribute(manas[i], strengths[i], agilitys[i], dexteritys[i], moneys[i], exps[i]);
-            res.add(new Hero(names[i], attribute, HeroType.Paladins));
+            res.add(new Paladin(names[i], attribute));
         }
         
         return res;
@@ -90,7 +90,7 @@ import java.util.*;
         // System.out.println(names.length + " " + levels.length + " " + damages.length + " " + defenses.length + " " + dogeChances.length);
         for(int i = 0; i < names.length; i++){
             attribute = new MonsterAttribute(levels[i], damages[i],defenses[i], dogeChances[i]);
-            res.add(new Monster(names[i], attribute, MonsterType.Dragons));
+            res.add(new Dragon(names[i], attribute));
         }
 
         // Name          level    damage    defense dodge chance
@@ -114,7 +114,7 @@ import java.util.*;
         // System.out.println(names.length + " " + levels.length + " " + damages.length + " " + defenses.length + " " + dogeChances.length);
         for(int i = 0; i < names.length; i++){
             attribute = new MonsterAttribute(levels[i], damages[i],defenses[i], dogeChances[i]);
-            res.add(new Monster(names[i], attribute, MonsterType.Exoskeletons));
+            res.add(new Exoskeleton(names[i], attribute));
         }
 
         // Name          level    damage   defense dodge chance
@@ -136,7 +136,7 @@ import java.util.*;
         // System.out.println(names.length + " " + levels.length + " " + damages.length + " " + defenses.length + " " + dogeChances.length);
         for(int i = 0; i < names.length; i++){
             attribute = new MonsterAttribute(levels[i], damages[i],defenses[i], dogeChances[i]);
-            res.add(new Monster(names[i], attribute, MonsterType.Spirits));
+            res.add(new Spirit(names[i], attribute));
         }
         
         return res;
