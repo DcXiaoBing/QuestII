@@ -1,6 +1,8 @@
+import java.util.List;
+
 /**
- * a class represents all character in Quest
- * hero and monser should be sub-class of this class
+ * a class represents all character in Quest hero and monser should be sub-class
+ * of this class
  */
 public abstract class GameCharacter{
     private Name name;
@@ -27,7 +29,7 @@ public abstract class GameCharacter{
     // this two attribute do not exist, needs to compute when need
     public abstract int getDamage();
     public abstract int getDefense();
-    public abstract void act(RectangularRPGBoard b);
+    public abstract void act(RectangularRPGBoard b, List<Monster> monsters, List<Hero> heros);
 
     /**
      * a function fro enter a cell

@@ -97,7 +97,7 @@ public class Hero extends GameCharacter{
      * a function handles the action of hero.
      * Hero could move, use item, teleport, 'b', buy/sell, attack
      */
-    public void act(RectangularRPGBoard b, List<Monster> monsters){
+    public void act(RectangularRPGBoard b, List<Monster> monsters, List<Hero> heros){
         OutputTools.printYellowString(getAlias() + "'s turn to make move");
         List<Monster> targets = searchTarget(b); // get monster's around
 

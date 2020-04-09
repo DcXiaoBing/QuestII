@@ -30,7 +30,7 @@ public class Monster extends GameCharacter{
      * a function handle monster' ai. Move forward unless has target to attack. Random attack a hero when have multiple target.
      * @param m the reference to the monster who wants to act
      */
-    public void act(RectangularRPGBoard b){
+    public void act(RectangularRPGBoard b, List<Monster> monsters, List<Hero> heros){
         List<Hero> targets = searchTargets(b);
         
         if(targets.isEmpty()){ // no target, move forward
