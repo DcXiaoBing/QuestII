@@ -94,14 +94,14 @@ public class Quest extends RectangularRPGBoardGame {
 
             // each monster make its move
             for(Monster m : monsters){
-                m.act(b);
+                m.act(b, monsters, heros);
             }
 
             // print board once and get all input info
             // do not print too much
             b.printBoard(); 
             for(Hero h : heros){
-                h.act(b);
+                h.act(b, monsters, heros);
             }
 
             status = isEnd();
