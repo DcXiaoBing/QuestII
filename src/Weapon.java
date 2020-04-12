@@ -3,9 +3,9 @@ import java.util.List;
 /**
  * a class represents weapon
  */
-public class Weapon extends Item{
+public class Weapon extends Item implements Sellable{
     private int damage;
-    private boolean singleHand;
+    private boolean singleHand, canBeSold = true;
 
 
 
@@ -14,6 +14,8 @@ public class Weapon extends Item{
         damage = _damage;
         singleHand = _singleHand;
     }
+
+    
 
     // name price minlevel damage sigleHand
     //  15    7      8       8        9
@@ -39,4 +41,14 @@ public class Weapon extends Item{
     public void setDamage(int damage) { this.damage = damage;}
     public boolean isSingleHand() { return this.singleHand;}
     public void setSingleHand(boolean singleHand) { this.singleHand = singleHand;}
+
+    @Override
+    public int getHalfPrice() {
+        return (int)(0.5 * getPrice());
+    }
+
+    @Override
+    public boolean canSoldToMarket() {
+        return canBeSold;
+    }
 }

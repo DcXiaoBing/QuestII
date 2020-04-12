@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * a class represents monster in Quest
  */
-public class Monster extends GameCharacter{
+public class Monster extends GameCharacter implements Fightable{
     private MonsterAttribute attribute;
     private MonsterType type;
     private static int totalMonster = 0;

@@ -3,7 +3,7 @@ import java.util.*;
 /**
  * a class represents hero in Quest
  */
-public class Hero extends GameCharacter{
+public abstract class Hero extends GameCharacter implements Fightable{
     public static final String HERO_INVENTORY_INDEX_INFO = "0 - return, 1 - weapon, 2 - armor, 3 - spell, 4 - potion, 5 - unequip weapon and armor.";
     private static String MOVE_FAIL = "The destination is inaccessible or out of boundary";
     private static final String GENERAL_INSTRUCTION_MESSAGE = "Input W/A/S/D to move, B to return to the nexus, \"item\" to use item, \"info\" to check info, \"tele\" to teleport, \"quit\" to exit game.";
@@ -53,45 +53,9 @@ public class Hero extends GameCharacter{
         if(attribute.getCurExp() < attribute.getMaxExp()) return ;
         OutputTools.printGreenString(getAlias() + " Upgrade!");
         attribute.levelUp();
-        setAttributeWhenUpgrade();
+        setAttributeWhenUpgrade(); // effect is based on hero type
     }
-    public void setAttributeWhenUpgrade(){
-        attribute.addCurExp(-attribute.getMaxExp()); // set exp
-        attribute.setMaxExpByLevel();
-        
-        // because hp is not capped, so curHp could larger than level*100
-        // when this happen, add 100 to curHp
-        if(attribute.getCurHp() > attribute.getLevel() * ConstantVariables.heroHpRate){
-            attribute.addCurHp(ConstantVariables.heroHpRate);
-        }else{
-            attribute.setHpByLevel();
-        }
-        attribute.addMana((int)(attribute.getMana() * ConstantVariables.manaUpgradeRate));
-
-        // attribute growth
-        switch (this.type) {
-            case Warriors:
-                attribute.addStrength((int)(attribute.getStrength() * ConstantVariables.warriorStrengthUpgradeRate));
-                attribute.addDexterity((int)(attribute.getDexterity() * ConstantVariables.warriorDexterityUpgradeRate));
-                attribute.addAgility((int)(attribute.getAgility() * ConstantVariables.warriorAgilityUpgradeRate));
-                break;
-
-            case Sorcerers:
-                attribute.addStrength((int)(attribute.getStrength() * ConstantVariables.sorcererStrengthUpgradeRate));
-                attribute.addDexterity((int)(attribute.getDexterity() * ConstantVariables.sorcererStrengthUpgradeRate));
-                attribute.addAgility((int)(attribute.getAgility() * ConstantVariables.sorcererStrengthUpgradeRate));
-                break;
-
-            case Paladins:
-                attribute.addStrength((int)(attribute.getStrength() * ConstantVariables.paladinStrengthUpgradeRate));
-                attribute.addDexterity((int)(attribute.getDexterity() * ConstantVariables.paladinStrengthUpgradeRate));
-                attribute.addAgility((int)(attribute.getAgility() * ConstantVariables.paladinStrengthUpgradeRate));
-                break;
-
-            default:
-                break;
-        }
-    }
+    protected abstract void setAttributeWhenUpgrade();
 
     /**
      * a function handles the action of hero.

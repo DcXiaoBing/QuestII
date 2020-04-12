@@ -29,7 +29,6 @@ public abstract class GameCharacter{
     // this two attribute do not exist, needs to compute when need
     public abstract int getDamage();
     public abstract int getDefense();
-    public abstract void act(RectangularRPGBoard b, List<Monster> monsters, List<Hero> heros);
 
     /**
      * a function fro enter a cell

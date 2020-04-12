@@ -1,7 +1,8 @@
 import java.util.List;
 
-public class Armor extends Item {
+public class Armor extends Item implements Sellable{
     private int defense;
+    private boolean canBeSold = true;
 
     Armor(String _name, int _price, int _minimumLevel, int _defense){
         super(_name, _price, _minimumLevel);
@@ -27,6 +28,15 @@ public class Armor extends Item {
             System.out.println(ARMOR_INFO_SEPERATOR);
             counter++;
         }
+    }
+    @Override
+    public int getHalfPrice() {
+        return (int)(0.5 * getPrice());
+    }
+
+    @Override
+    public boolean canSoldToMarket() {
+        return canBeSold;
     }
 
     public int getDefense(){return this.defense;}

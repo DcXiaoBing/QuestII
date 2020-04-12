@@ -3,9 +3,10 @@ import java.util.List;
 /**
  * a class represents potion
  */
-public class Potion extends Item{
+public class Potion extends Item implements Sellable{
     private HeroAttribute attribute;
     private int effectAmount; // only for display info
+    private boolean canBeSold = true;
 
 
     Potion(String _name, int _price, int _minimumLevel, HeroAttribute _attribute, int _effectAmount){
@@ -62,5 +63,15 @@ public class Potion extends Item{
 
     public void setEffectAmount(int effectAmount) {
         this.effectAmount = effectAmount;
+    }
+
+    @Override
+    public int getHalfPrice() {
+        return (int)(0.5 * getPrice());
+    }
+
+    @Override
+    public boolean canSoldToMarket() {
+        return canBeSold;
     }
 }

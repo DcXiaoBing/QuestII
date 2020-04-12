@@ -3,11 +3,12 @@ import java.util.List;
 /**
  * a class represents spell
  */
-public class Spell extends Item{
+public class Spell extends Item implements Sellable{
     
     private int damage;
     private int manaRequired;
     private SpellType type;
+    private boolean canBeSold = false;
 
     Spell(String _name, int _price, int _minimumLevel, int _damage, int _manaRequired, SpellType _type){
         super(_name, _price, _minimumLevel);
@@ -54,6 +55,16 @@ public class Spell extends Item{
             System.out.println(SPELL_INFO_SEPERATOR);
             counter++;
         }
+    }
+
+    @Override
+    public int getHalfPrice() {
+        return (int)(0.5 * getPrice());
+    }
+
+    @Override
+    public boolean canSoldToMarket() {
+        return canBeSold;
     }
 
     public int getBaseDamage(){
